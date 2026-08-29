@@ -1,12 +1,26 @@
 from ultralytics import YOLO
 import cv2
+import torch
 
 
 class HandDetector:
+
     def __init__(self, model_path):
+
         print("Loading hand detector...")
 
         self.model = YOLO(model_path)
+
+        # Automatically select GPU or CPU
+        if torch.cuda.is_available():
+            self.device = 0
+            print(
+                "Hand detector device: GPU - "
+                f"{torch.cuda.get_device_name(0)}"
+            )
+        else:
+            self.device = "cpu"
+            print("Hand detector device: CPU")
 
         print("Hand detector loaded successfully!")
 
@@ -15,12 +29,12 @@ class HandDetector:
         Detect hands in a camera frame.
 
         Returns:
-            detections: list of detected hands
+            list of detected hands.
         """
 
         results = self.model(
             frame,
-            device=0,
+            device=self.device,
             verbose=False
         )
 
@@ -65,6 +79,10 @@ class HandDetector:
         return detections
 
 
+# --------------------------------------------------
+# Standalone detector test
+# --------------------------------------------------
+
 if __name__ == "__main__":
 
     MODEL_PATH = (
@@ -77,7 +95,9 @@ if __name__ == "__main__":
     camera = cv2.VideoCapture(0)
 
     if not camera.isOpened():
+
         print("ERROR: Could not open camera.")
+
         raise SystemExit
 
     print("Camera started.")
@@ -89,8 +109,13 @@ if __name__ == "__main__":
         success, frame = camera.read()
 
         if not success:
+
             print("Could not read camera frame.")
+
             break
+
+        # Mirror the webcam
+        frame = cv2.flip(frame, 1)
 
         detections = detector.detect(frame)
 
@@ -132,10 +157,14 @@ if __name__ == "__main__":
                 2
             )
 
-        cv2.imshow("PalmLock - Hand Detection", frame)
+        cv2.imshow(
+            "PalmLock - Hand Detection",
+            frame
+        )
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
 
     camera.release()
+
     cv2.destroyAllWindows()
