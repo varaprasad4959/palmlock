@@ -1,0 +1,24 @@
+venv/
+__pycache__/
+*.py[cod]
+
+# Personal biometric data
+data/enrollment/*
+!data/enrollment/.gitkeep
+
+# Biometric templates
+*.npy
+
+# Training/generated data
+datasets/
+palm_data/
+palm_aligned/
+runs/
+weights/
+
+# VS Code
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
